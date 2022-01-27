@@ -20,20 +20,22 @@ struct Handler: AsyncLambdaHandler {
 
   init(context: Lambda.InitializationContext) async throws { }
 
+  func handleHello(_ name: String) throws -> Out {
+    let output = try bodyEncoder.encodeAsString(Output(hello: name))
+    return Out(statusCode: .ok, body: output)
+  }
+
   func handle(event request: In, context _: Lambda.Context) async throws -> Out {
     switch (request.context.http.method, request.context.http.path) {
       case (.GET, "/hello"):
-        let output = try! bodyEncoder.encodeAsString(Output(hello: "world"))
-        return .init(statusCode: .ok, body: output)
+        return try handleHello("world")
       case (.POST, "/hello"):
         guard let input = try? bodyDecoder.decode(Input.self, from: request.body ?? "") else {
-          return .init(statusCode: .badRequest)
+          return Out(statusCode: .badRequest)
         }
-        let output = try bodyEncoder.encodeAsString(Output(hello: input.name))
-        return .init(statusCode: .ok, body: output)
+        return try handleHello(input.name)
       default:
-        return .init(statusCode: .notFound)
-
+        return Out(statusCode: .notFound)
     }
   }
 }
