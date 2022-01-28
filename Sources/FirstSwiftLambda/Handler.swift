@@ -24,7 +24,7 @@ struct Handler: AsyncLambdaHandler {
     do {
       return try await handleInternal(event: event, context: context)
     } catch {
-      return Out(statusCode: .internalServerError)
+      return .internalServerError
     }
   }
 
@@ -34,11 +34,11 @@ struct Handler: AsyncLambdaHandler {
         return handleHello("world")
       case (.POST, "/hello"):
         guard let input = try? bodyDecoder.decode(Input.self, from: request.body ?? "") else {
-          return Out(statusCode: .badRequest)
+          return .badRequest
         }
         return handleHello(input.name)
       default:
-        return Out(statusCode: .notFound)
+        return .notFound
     }
   }
 
